@@ -92,7 +92,7 @@ init([SupChild, Id]) ->
     {A1, A2, A3} =
         case basho_bench_config:get(rng_seed, {42, 23, 12}) of
             {Aa, Ab, Ac} -> {Aa, Ab, Ac};
-            now -> now()
+            now -> getnow()
         end,
 
     RngSeed = {A1+Id, A2+Id, A3+Id},
@@ -208,12 +208,17 @@ ops_tuple() ->
     Ops = [F(X) || X <- basho_bench_config:get(operations, [])],
     list_to_tuple(lists:flatten(Ops)).
 
+-ifdef(deprecated_20).
+seed(R) -> rand:seed(exrop, R). % only has to be unique per-pid
+-else.
+seed(R) -> random:seed(R). % only has to be unique per-pid
+-endif.
 
 worker_init(State) ->
     %% Trap exits from linked parent process; use this to ensure the driver
     %% gets a chance to cleanup
     process_flag(trap_exit, true),
-    random:seed(State#state.rng_seed),
+    seed(State#state.rng_seed),
     worker_idle_loop(State).
 
 worker_idle_loop(State) ->
@@ -252,7 +257,7 @@ worker_next_op2(State, OpTag) ->
    catch (State#state.driver):run(OpTag, State#state.keygen, State#state.valgen,
                                   State#state.driver_state).
 worker_next_op(State) ->
-    Next = element(random:uniform(State#state.ops_len), State#state.ops),
+    Next = element(rand_uniform(State#state.ops_len), State#state.ops),
     {_Label, OpTag} = Next,
     Start = os:timestamp(),
     Result = worker_next_op2(State, OpTag),
@@ -362,3 +367,18 @@ rate_worker_run_loop(State, Lambda) ->
         ExitReason ->
             exit(ExitReason)
     end.
+
+-ifdef(deprecated_19).
+rand_uniform(R) -> rand:uniform(R).
+getnow() -> erlang:timestamp().
+-else.
+
+-ifdef(deprecated_20).
+rand_uniform(R) -> rand:uniform(R).
+getnow() -> erlang:timestamp().
+-else.
+rand_uniform(R) -> random:uniform(R).
+getnow() -> now().
+-endif.
+
+-endif.

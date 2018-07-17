@@ -68,6 +68,9 @@ mib_sec-results:
 results-browser:
 	cp -R priv/results-browser/* tests/current && cd tests/current && python -c 'import os, json; print json.dumps(os.listdir("."))' > web/data.json && python ../../priv/results-browser.py
 
+results-browser-ext:
+	cp -R priv/results-browser/* tests/current && cd tests/current && python -c 'import os, json; print json.dumps(os.listdir("."))' > web/data.json && python ../../priv/results-browser.py --host='0.0.0.0'
+
 TARGETS := $(shell ls tests/ | grep -v current)
 JOBS := $(addprefix job,${TARGETS})
 .PHONY: all_results ${JOBS}

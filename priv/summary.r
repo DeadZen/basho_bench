@@ -58,6 +58,7 @@ plot1 <- qplot(elapsed, successful / window, data = b$summary,
 
                 geom_smooth(aes(y = successful / window, colour = "ok"), size=0.5) +
                 geom_point(aes(y = successful / window, colour = "ok"), size=2.0) +
+		scale_y_continuous(labels=scales::comma) +
 
                 geom_smooth(aes(y = failed / window, colour = "error"), size=0.5) +
                 geom_point(aes(y = failed / window, colour = "error"), size=2.0) +
